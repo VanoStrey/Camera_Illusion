@@ -1,3 +1,12 @@
+pub const PIXEL_BLOCK_SIZE: u32 = 4;
+#[allow(dead_code)]
+pub const OUTPUT_SIZE: u32 = 640;
+#[allow(dead_code)]
+pub const COLOR_LEVELS: u32 = 4;
+#[allow(dead_code)]
+pub const MAX_DURATION_SEC: u32 = 60;
+#[allow(dead_code)]
+pub const MAX_FILE_SIZE: u64 = 50 * 1024 * 1024;
 use opencv::{core, prelude::*};
 use rand::{thread_rng, Rng};
 use crate::noise::NOISE_PALETTE;
@@ -53,7 +62,9 @@ pub fn shift_texture(texture: &Mat, dx: i32, dy: i32, fill_texture: &Mat) -> Mat
 /// Убирает конфликты «соседи одного цвета (кроме белого)» с вероятностью,
 /// пропорциональной магнитуде движения в каждом пикселе.
 /// motion_map — одноканальная матрица CV_32F того же размера, что и frame.
+#[allow(dead_code)]
 pub fn enforce_noise_rule(frame: &mut Mat, motion_map: &Mat) {
+    // (функция остаётся без изменений, но не используется)
     let palette = &*NOISE_PALETTE;
     let white: [u8; 3] = [255, 255, 255];
     let width = frame.cols() as usize;
@@ -68,9 +79,8 @@ pub fn enforce_noise_rule(frame: &mut Mat, motion_map: &Mat) {
     let motion_data: &[f32] = bytemuck::cast_slice(motion_bytes);
 
     let palette_bytes: Vec<[u8; 3]> = palette.iter().map(|c| *c).collect();
-    let max_motion: f32 = 5.0; // масштаб вероятности, подберите под свою камеру
+    let max_motion: f32 = 5.0;
 
-    // 3 итерации обычно достаточно, чтобы убрать почти все конфликты
     for _ in 0..3 {
         for y in 0..height {
             let row_start = y * step_frame;
@@ -95,7 +105,6 @@ pub fn enforce_noise_rule(frame: &mut Mat, motion_map: &Mat) {
                 if (right_color != white && right_color == color)
                     || (bottom_color != white && bottom_color == color)
                 {
-                    // Вероятность замены = motion / max_motion, ограничена [0,1]
                     let motion_idx = y * (step_motion / 4) + x;
                     let mag_val = motion_data[motion_idx];
                     let prob = (mag_val / max_motion).min(1.0).max(0.0);

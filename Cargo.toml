@@ -4,8 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-opencv = { version = "0.98", features = ["highgui"] }
+opencv = { version = "0.98", features = [] }   # highgui больше не нужен
 anyhow = "1"
 rand = "0.8"
 lazy_static = "1.4"
 bytemuck = "1.25.0"
+minifb = "0.27"
